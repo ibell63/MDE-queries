@@ -1,0 +1,11 @@
+// This query checks to see if devices have been communicating with badIPs from an external list.
+let badIPlist = (externaldata(badip: string )
+[@"https://raw.githubusercontent.com/stamparm/ipsum/master/levels/2.txt"]
+with (format="txt"))
+| where badip !startswith "#"
+| project badip;
+badIPlist
+| join (DeviceNetworkEvents 
+| where Timestamp > ago(30d) 
+) on $left.badip == $right.RemoteIP
+| project Timestamp,DeviceName,RemoteIP,LocalPort,RemotePort,RemoteUrl,InitiatingProcessAccountUpn,InitiatingProcessFolderPath,InitiatingProcessCommandLine,AdditionalFields,DeviceId,ReportId
